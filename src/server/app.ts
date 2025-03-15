@@ -4,6 +4,9 @@ import cors from 'cors';
 import { logger } from '../logger';
 import { appRouter } from './api';
 import path from 'node:path';
+import 'dotenv/config';
+import { usersRouter } from './api/users/users.router';
+import mongoose from 'mongoose';
 
 export class App {
   private readonly app: Express;
@@ -18,6 +21,7 @@ export class App {
     App.instance = this.app;
     this.setupMiddleware();
     this.setupRoutes();
+    this.connectToDb();
     logger.info('App initialized successfully');
   }
 
@@ -29,6 +33,7 @@ export class App {
 
   private setupMiddleware() {
     this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
     this.app.use(helmet());
     this.app.use(cors());
     this.app.set('view engine', 'hbs');
@@ -39,6 +44,13 @@ export class App {
 
   private setupRoutes() {
     this.app.use(appRouter);
+    this.app.use(usersRouter);
     logger.info('Routes set up successfully');
+  }
+
+  private connectToDb() {
+    mongoose.connect(process.env.MONGODB_URI as string).then(() => {
+      logger.info('Connection to database established successfully');
+    });
   }
 }
