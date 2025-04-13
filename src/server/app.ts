@@ -7,6 +7,7 @@ import path from 'node:path';
 import 'dotenv/config';
 import { usersRouter } from './api/users/users.router';
 import mongoose from 'mongoose';
+import { startApolloServer } from '../apollo';
 
 export class App {
   private readonly app: Express;
@@ -21,6 +22,7 @@ export class App {
     App.instance = this.app;
     this.setupMiddleware();
     this.setupRoutes();
+    this.startApolloServer();
     this.connectToDb();
     logger.info('App initialized successfully');
   }
@@ -46,6 +48,12 @@ export class App {
     this.app.use(appRouter);
     this.app.use(usersRouter);
     logger.info('Routes set up successfully');
+  }
+
+  private startApolloServer() {
+    startApolloServer(this.app).then(() => {
+      logger.info('Apollo server started successfully');
+    });
   }
 
   private connectToDb() {
